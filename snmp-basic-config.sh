@@ -15,7 +15,7 @@ fi
 mv /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.org
 echo "rocommunity $2" > /etc/snmp/snmpd.conf
 
-if [-f /etc/default/snmpd];then
+if [ -f /etc/default/snmpd ];then
 	replace "SNMPDOPTS='-Lsd -Lf /dev/null -u snmp -p /var/run/snmpd.pid'" "SNMPDOPTS='-Lsd -Lf /dev/null -u snmp -I -smux -p /var/run/snmpd.pid -c /etc/snmp/snmpd.conf'" -- /etc/default/snmpd
 else
 	echo "SNMPDOPTS='-Lsd -Lf /dev/null -u snmp -I -smux -p /var/run/snmpd.pid -c /etc/snmp/snmpd.conf'" > /etc/default/snmpd
