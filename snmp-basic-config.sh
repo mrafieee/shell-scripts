@@ -1,15 +1,22 @@
-#!/bin/sh
+#!/bin/bash
 
-###############################
-###### this is a GPL  V3 ######
-###############################
+###########################################################
+###### This piece of code is released under a GPL V3 ######
+###########################################################
 
 
 echo "\nyou need to enter the IP address and community name as args\n"
-echo "example sudo ssh snmp-basic-config.sh 192.168.1.2 community-name"
+echo "example sudo sh snmp-basic-config.sh 192.168.1.2 community-name"
 
 
-if ! [ -f /etc/snmp/snmpd.conf ];then
+if ! [ ps aux |grep -v grep|grep snmpd ];then
+	echo -n "snmpd is running well \nconfiguring snmp ."
+	for ((i=0;i<5;i++));do
+		sleep 500 ms
+		echo -n "."
+	done
+	echo -n "\n"
+
 	apt-get install snmpd
 fi
 mv /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.org
