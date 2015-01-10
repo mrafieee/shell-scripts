@@ -1,0 +1,28 @@
+#!/bin/sh
+
+echo "\n-------------- Restarting Identity services nova services ----------------\n"
+service keystone restart
+
+echo "\n-------------- Restarting Compute services nova services ----------------\n"
+service nova-api restart
+service nova-cert restart
+service nova-consoleauth restart
+service nova-scheduler restart
+service nova-conductor restart
+service nova-novncproxy restart
+
+echo "\n-------------- Restarting Image services ----------------\n"
+service glance-registry restart
+service glance-api restart
+
+echo "\n-------------- Restarting Networking services ----------------\n"
+service neutron-server restart
+
+
+#network node
+service  neutron-dhcp-agent restart
+service  neutron-l3-agent restart
+service  neutron-plugin-openvswitch-agent restart
+
+
+
