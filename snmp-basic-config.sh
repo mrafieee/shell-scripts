@@ -47,8 +47,8 @@ if ! [ -f /etc/initd/snmpd ];then
 	read -p "Do you want to install snmpd package: (Y/n) " prompt
 	echo $prompt
 	if [ \( "$prompt" = "Y" \) -o \( "$prompt" = "y" \) ];then
-		#sudo apt-get update
-		#sudo apt-get install snmpd
+		sudo apt-get update
+		sudo apt-get install snmpd
 		echo "Snmpd installed successfully :)"
 	else
 		if [ "$prompt" = "n" ];then
