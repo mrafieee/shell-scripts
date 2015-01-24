@@ -9,11 +9,42 @@
 
 # TODO: get rid of these
 NOW=$(date +"%Y-%m-%d")
-ADDRESS=$2
-DEST = $1
+#ADDRESS=$2
+#DEST = $1
+
+set -e
+clear
+echo "#################################################################"
+echo "######## This piece of code is GPL V3 and is free to use ########"
+echo "#################################################################"
+
+# Parse input parameters
+usage() {
+	echo "Usage: $0  [options]
+Options are:
+    --mysql|-m (-a <user>:<pass>@<ip address>) (--user|-u <user> --password|-p <password>)
+    --files|-f <file or folder address> ((--increamental|-i) | (--snapshot|-s))
+    --address <ip address>
+    --git|-g <git address>
+examples:
+    backup -m -a user:pass@127.0.0.1
+    backup -m -u root -p pass --address 127.0.0.1
+    backup --files|-f </etc/> --increamental|-i --snapshot|-s --address 127.0.0.1
+    backup --git|-g http://172.20.90.11/address.git
+For more info: man $0"
+# TODO: no man page exists yet
+	exit 0
+}
+
+
+
+
+#-----------------------------------------------------------------------------------
+#                     the following methods need to improve ASAP
+
 
 # to backup git repositories
-git(){
+git_backup(){
 	git_address=$1
 	# TODO: merge this sction to script -- gits
 
@@ -100,3 +131,39 @@ mysql_backup(){
 };
 # Test case: mysql_backup
 ######################################################################
+#-----------------------------------------------------------------------------------
+
+#EXTRA=yes
+for i in $@ ; do
+	case "${1}" in
+	"--mysql"|"-m")
+		if [ -z "${2}" ] ; then
+			echo "No parameter defining mysql attributes "
+			usage
+		fi
+		EXTRA_PACKAGES=${2}
+		shift
+		shift
+	;;
+	"--file"|"-f")
+		if [ -z "${2}" ] ; then
+			echo "No parameter defining the debootstrap URL"
+			usage
+		fi
+		DEB_MIRROR=${2}
+		shift
+		shift
+	;;
+	"--git"|"-g")
+		EXTRA=no
+		shift
+	;;
+	"--help"|"-h")
+		usage
+		shift
+	;;
+	*)
+	;;
+	esac
+done
+
