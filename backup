@@ -4,13 +4,25 @@
 # TODO: gathering some info from args 1.where to save backup 2. which directories
 # TODO: changing scp to rsync
 # TODO: changing log method
-# TODO: readd about log levels
-# gathering some info from env
-
+# TODO: read about log levels
+# TODO: gathering some info from env
 # TODO: get rid of these
-NOW=$(date +"%Y-%m-%d")
-#ADDRESS=$2
-#DEST = $1
+# TODO: adding clients
+
+# our method of backing up is pulling from client nodes to backup server and currentlly this software just supports git/filesystem/mysql backups
+
+#---------------------- clients actions
+# #ssh-keygen
+# adding their public key to backup server where this script is running
+# specifying thire addresses at the end of this script
+
+
+#---------------------- Some Global variables
+NOW=$(date +"%Y-%m-%d %H:%M:%S")
+LOGFILE="/var/log/backup.log"
+red=`tput setaf 1`
+green=`tput setaf 2`
+reset=`tput sgr0`
 
 set -e
 clear
@@ -37,8 +49,6 @@ For more info: man $0"
 }
 
 
-
-
 #-----------------------------------------------------------------------------------
 #                     the following methods need to improve ASAP
 
@@ -48,26 +58,22 @@ git_backup(){
 	git_address=$1
 	# TODO: merge this sction to script -- gits
 
-	NOW=$(date +"%Y-%m-%d")
-	LOGFILE="/home/backup/git_172.20.5.240/backup.log"
-
+    dir  = "a"
 	echo "---------------------- $NOW git backup starts  ---------------------" >> $LOGFILE 2>&1
 	for dir in `ssh gitdev@172.20.5.240 | awk '{print $2}' | tr '\n' ' '`
 	do
-		if [ $dir = "support@xamin.ir," -o $dir = "W" ]:
-		then
+		if [ $dir = "support@xamin.ir," -o $dir = "W" ]; then
 			continue
 		else
 			path="/home/backup/git_172.20.5.240/$dir"
-			if [ -d "${path}" ]:
-			then
+			if [ -d "${path}" ]; then
 				cd $path
 				echo "$(date) :: dir=$dir path=$path" >> $LOGFILE 2>&1
 				echo -n "$(date) :: $dir :: " >> $LOGFILE 2>&1
 				git pull >> $LOGFILE 2>&1
 			else
 				cd /home/backup/git_172.20.5.240/
-							echo "$(date) :: dir=$dir path=$path" >> $LOGFILE 2>&1
+				echo "$(date) :: dir=$dir path=$path" >> $LOGFILE 2>&1
 				echo -n "$(date) :: $dir :: " >> $LOGFILE 2>&1
 				git clone gitdev@172.20.5.240:$dir $path  >> $LOGFILE 2>&1
 			fi
@@ -109,8 +115,6 @@ files_backup(){
 
 mysql_backup(){
 	# TODO: merge this section to script -- mysql dbs
-
-	NOW=$(date +"%Y-%m-%d")
 	ADDRESS="172.20.5.212"
 	FILE="mysql_${ADDRESS}_${NOW}.tar.bz2"
 
@@ -133,32 +137,33 @@ mysql_backup(){
 ######################################################################
 #-----------------------------------------------------------------------------------
 
-#EXTRA=yes
 for i in $@ ; do
 	case "${1}" in
 	"--mysql"|"-m")
 		if [ -z "${2}" ] ; then
-			echo "No parameter defining mysql attributes "
+			echo "${red}No parameter defining mysql attributes${reset}"
 			usage
 		fi
-		EXTRA_PACKAGES=${2}
 		shift
 		shift
 	;;
 	"--file"|"-f")
 		if [ -z "${2}" ] ; then
-			echo "No parameter defining the debootstrap URL"
+			echo "${red}No parameter defining file or director${reset}y"
 			usage
 		fi
-		DEB_MIRROR=${2}
 		shift
 		shift
 	;;
 	"--git"|"-g")
-		EXTRA=no
-		shift
+		if [ -z "${2}" ] ; then
+			echo "${red}No parameter defining git repo.${reset}"
+			logger
+			usage
+		fi
 	;;
 	"--help"|"-h")
+	    echo $NOW
 		usage
 		shift
 	;;
@@ -166,4 +171,3 @@ for i in $@ ; do
 	;;
 	esac
 done
-
