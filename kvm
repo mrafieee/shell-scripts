@@ -1,0 +1,151 @@
+#!/bin/bash
+
+##############################################################
+#version 0.6 and needs some modifications...
+#
+#Xamin nested test script.
+#last update: 
+#date  91/10/02
+#
+##############################################################
+
+# Prerequisites
+# apt-get install kvm
+
+# running manually
+# qemu-img create <address of image you want to save> <file size for example 2G>
+# kvm <address of image file> -cdrom <address of iso file or cd rom> -m 3G
+# kvm <address of image file>
+# brctl addif br0 tap0
+# ifconfig eth0 0.0.0.0 up
+# ifconfig tap0 0.0.0.0 up
+# ifconfig br0 up
+# dhclient br0
+# cat /etc/resolv.conf > /tmp/resolv.conf
+# echo "nameserver $IP" > /etc/resolv.conf
+
+
+valid_ip()
+{
+    IPERROR=0
+    oldIFS=$IFS
+    IFS=.
+    set -- $1
+    if [ $# -eq 4 ]
+    then
+      for seg
+      do
+        case $seg in
+            ""|*[!0-9]*) IPERROR=1;break ;; ## Segment empty or non-numeric char
+            *) [ $seg -gt 255 ] && IPERROR=2 ;;
+        esac
+      done
+    else
+      IPERROR=3 ## Not 4 segments
+    fi
+    IFS=$oldIFS
+}
+
+echo 
+echo 
+
+if [[ $(/usr/bin/id -u) -ne 0 ]]; 
+ then
+    echo "ERROR: Need to be root!"
+    exit 1
+ else 
+    echo "FYI: Root permission     ###########  OK"
+fi
+
+egrep '(vmx|svm)' /proc/cpuinfo >/dev/null 2>&1
+
+if [ $? -eq 1 ]
+ then
+    echo "ERROR: Need a CPU with VT support. You havn't it!"
+    exit 1		
+ else 
+    echo "FYI: Hardware VT support ###########  OK" 
+fi
+
+version=`uname -r | awk -F. '{ printf("%d%d%d\n",$1,$2,$3); }'`
+
+if [ "$version" -lt "264" ]
+ then 
+    echo "ERROR: Kernel newer than 2.6.38 needed. You havn't it!"
+    exit 1
+ else
+    echo "FYI: Kernel support      ###########  OK"
+fi
+
+type kvm >/dev/null 2>&1
+
+if [ $? -eq 1 ]
+ then 
+    echo >&2 "ERROR: Require KVM but it's not installed!"
+    exit 1
+ else 
+    echo >&2 "FYI: KVM support         ###########  OK"
+ fi
+
+rmmod kvm_intel
+if [ $?  != 0 ]
+   then
+    echo "ERROR: Can not remove kvm_intel module. It needs VT support enabled in BIOS. Its probably disabled!"
+    exit 1
+fi
+modprobe -r kvm-intel  ## changed in 0.6 -r added
+if [ $? -ne 0 ]
+ then 
+    echo "ERROR: Can not install  kvm_intel module with nested option. It needs VT support enabled in BIOS. Its probably disabled!"
+    exit 1
+fi
+modprobe kvm-intel nested=1
+echo "FYI: VT enabled in BIOS  ###########  OK"  
+
+echo
+echo
+echo "Salaam. You run this script for testing xamin in nested environment. If OK please enter name of image you want: (For example if you want image1.raw please type image1):"
+read IMAGE
+echo "###########"
+echo "Please type address of xamin iso file. (For example /home/mini.iso):"
+read CDROM
+while [ ! -f "$CDROM" ]
+   do
+      echo "ERROR: File $CDROM does not exist. Please type address of xamin iso file. (For example /home/mini.iso):"
+      read CDROM
+   done
+echo "###########"
+echo "Please enter IP of xamin you will install! It should be the same IP you will set in xamin installer. (For example: 10.1.46.225):"
+read IP
+valid_ip $IP
+while [ $IPERROR -ne 0 ]
+   do
+      echo "ERROR:IP format is not valid. please enter IP of xamin you will install! It should be the same IP you will set in xamin installer. (For example: 10.1.46.225):"
+      read IP
+      valid_ip $IP
+   done
+qemu-img create -f qcow2 $IMAGE.raw 5G
+if [ $?  != 0 ]
+   then
+    echo "ERROR: Can not execute qemu-img"
+    exit 1
+fi
+kvm -cpu qemu64,+vmx -m 3G -cdrom $CDROM -hda $IMAGE.raw -net nic -net tap &  ## changed in 0.6 cpu & memory parameter changed
+sleep 2
+if [ ! $(ifconfig | grep -o br0)  ]
+   then
+      brctl addbr br0
+   fi
+if [ ! $( brctl show | awk -F"\t" '{ print $6 }' | grep -o eth0)  ]
+   then
+      brctl addif br0 eth0
+   fi
+brctl addif br0 tap0
+ifconfig eth0 0.0.0.0 up
+ifconfig tap0 0.0.0.0 up
+ifconfig br0 up
+dhclient br0
+
+cat /etc/resolv.conf > /tmp/resolv.conf
+echo "nameserver $IP" > /etc/resolv.conf
+cat /tmp/resolv.conf >> /etc/resolv.conf

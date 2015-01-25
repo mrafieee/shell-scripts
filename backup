@@ -20,6 +20,7 @@
 #---------------------- Some Global variables
 NOW=$(date +"%Y-%m-%d %H:%M:%S")
 LOGFILE="/var/log/backup.log"
+BACKUP_DEST=""
 red=`tput setaf 1`
 green=`tput setaf 2`
 reset=`tput sgr0`
@@ -86,12 +87,8 @@ git_backup(){
 #######################################################################
 
 files_backup(){
-	# Method can be incrimental or fixed size
-	method=$1
-	# Source should be comma or space seperated file or directory name
-	source=$2
 	# Destination should be a directory name
-
+    # backup --files|-f </etc/> --increamental|-i --snapshot|-s --address 127.0.0.1
 	# TODO: adding hostname to backupfile
 	FILE="_${ADDRESS}_${NOW}.tar.bz2"
 
@@ -141,7 +138,8 @@ for i in $@ ; do
 	case "${1}" in
 	"--mysql"|"-m")
 		if [ -z "${2}" ] ; then
-			echo "${red}No parameter defining mysql attributes${reset}"
+			echo -n "${red}No parameter defining mysql attributes${reset}\n"
+			logger "No parameter defining mysql attributes"
 			usage
 		fi
 		shift
@@ -149,16 +147,22 @@ for i in $@ ; do
 	;;
 	"--file"|"-f")
 		if [ -z "${2}" ] ; then
-			echo "${red}No parameter defining file or director${reset}y"
+			echo -n "${red}No parameter defining file or directory${reset}\n"
+			logger "No parameter defining file or directory"
 			usage
+        else
+            ADDRESS=${2}
+            #backup --files|-f </etc/> --increamental|-i --snapshot|-s --address 127.0.0.1
+            files_backup ${2}
+            exit 1
 		fi
 		shift
 		shift
 	;;
 	"--git"|"-g")
 		if [ -z "${2}" ] ; then
-			echo "${red}No parameter defining git repo.${reset}"
-			logger
+			echo -n "${red}No parameter defining git repo.${reset}\n"
+			logger "No parameter defining git repo."
 			usage
 		fi
 	;;
