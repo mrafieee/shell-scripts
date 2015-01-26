@@ -1,6 +1,10 @@
 #!/bin/bash
 
-#this installaion tooks a lot of my time so I created this to help others
+# This installaion tooks a lot of my time so I created this to help others
+# comments bellow would help
+# youtube: Installing packettrachttp://cranialtrauma.co.uk/2015/01/cisco-packettracer-install-linux/er in all Variants of Linux Ubuntu 14.04, Fedora 20, Linux Mint. Debian (HD)
+# http://cranialtrauma.co.uk/2015/01/cisco-packettracer-install-linux/
+
 # wget <Cisco\ Packet\ Tracer\ 6.0.1\ for\ Linux\ \(no\ tutorials\)>
 cd ~
 tar -xvzf Cisco\ Packet\ Tracer\ 6.0.1\ for\ Linux\ \(no\ tutorials\)
