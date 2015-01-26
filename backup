@@ -20,10 +20,11 @@
 #---------------------- Some Global variables
 NOW=$(date +"%Y-%m-%d %H:%M:%S")
 LOGFILE="/var/log/backup.log"
-BACKUP_DEST=""
+BACKUP_DEST="/home/$USER/backup"
 red=`tput setaf 1`
 green=`tput setaf 2`
 reset=`tput sgr0`
+
 
 set -e
 clear
@@ -31,6 +32,14 @@ echo "#################################################################"
 echo "######## This piece of code is GPL V3 and is free to use ########"
 echo "#################################################################"
 
+if ! [ -d ${BACKUP_DEST} ]; then
+    echo "${BACKUP_DEST} does not exist creatig directory ..."
+    mkdir ${BACKUP_DEST}
+fi
+
+echo "Backup destination is ${green}${BACKUP_DEST}/${reset}"
+echo "Logs are saved in ${green}${BACKUP_DEST}:${LOGFILE}${reset}"
+echo "git & mysql is not working yet"
 # Parse input parameters
 usage() {
 	echo "Usage: $0  [options]
@@ -55,34 +64,34 @@ For more info: man $0"
 
 
 # to backup git repositories
-git_backup(){
-	git_address=$1
-	# TODO: merge this sction to script -- gits
-
-    dir  = "a"
-	echo "---------------------- $NOW git backup starts  ---------------------" >> $LOGFILE 2>&1
-	for dir in `ssh gitdev@172.20.5.240 | awk '{print $2}' | tr '\n' ' '`
-	do
-		if [ $dir = "support@xamin.ir," -o $dir = "W" ]; then
-			continue
-		else
-			path="/home/backup/git_172.20.5.240/$dir"
-			if [ -d "${path}" ]; then
-				cd $path
-				echo "$(date) :: dir=$dir path=$path" >> $LOGFILE 2>&1
-				echo -n "$(date) :: $dir :: " >> $LOGFILE 2>&1
-				git pull >> $LOGFILE 2>&1
-			else
-				cd /home/backup/git_172.20.5.240/
-				echo "$(date) :: dir=$dir path=$path" >> $LOGFILE 2>&1
-				echo -n "$(date) :: $dir :: " >> $LOGFILE 2>&1
-				git clone gitdev@172.20.5.240:$dir $path  >> $LOGFILE 2>&1
-			fi
-
-		fi
-	done
-	echo "-------------------------------------------------------------------" >> $LOGFILE 2>&1
-};
+#git_backup(){
+#	git_address=$1
+#	# TODO: merge this sction to script -- gits
+#
+#    dir  = "a"
+#	echo "---------------------- $NOW git backup starts  ---------------------" >> $LOGFILE 2>&1
+#	for dir in `ssh gitdev@172.20.5.240 | awk '{print $2}' | tr '\n' ' '`
+#	do
+#		if [ $dir = "support@xamin.ir," -o $dir = "W" ]; then
+#			continue
+#		else
+#			path="/home/backup/git_172.20.5.240/$dir"
+#			if [ -d "${path}" ]; then
+#				cd $path
+#				echo "$(date) :: dir=$dir path=$path" >> $LOGFILE 2>&1
+#				echo -n "$(date) :: $dir :: " >> $LOGFILE 2>&1
+#				git pull >> $LOGFILE 2>&1
+#			else
+#				cd /home/backup/git_172.20.5.240/
+#				echo "$(date) :: dir=$dir path=$path" >> $LOGFILE 2>&1
+#				echo -n "$(date) :: $dir :: " >> $LOGFILE 2>&1
+#				git clone gitdev@172.20.5.240:$dir $path  >> $LOGFILE 2>&1
+#			fi
+#
+#		fi
+#	done
+#	echo "-------------------------------------------------------------------" >> $LOGFILE 2>&1
+#};
 # Test Case: git_backup <git address url>
 #######################################################################
 
@@ -92,17 +101,17 @@ files_backup(){
 	# TODO: adding hostname to backupfile
 	FILE="_${ADDRESS}_${NOW}.tar.bz2"
 
-	echo "---------------- $NOW ---------------" >> /root/backup.log
+	echo "---------------- $NOW ---------------" >> $LOGFILE 2>&1
 
-	echo "Backing up data to $FILE file" >> /root/backup.log
+	echo "Backing up data to $FILE file" >> $LOGFILE 2>&1
 	logger "Backing up data to $FILE file"
 	tar cvjf /tmp/$FILE /var/www/ /etc/
 
-	echo "Moving to $FILE file to $1" >> /root/backup.log
+	echo "Moving to $FILE file to $1" >> $LOGFILE 2>&1
 	logger "Backing up data to $FILE file"
-	scp -i .ssh/id_rsa /root/$FILE saver@$1:/home/backup/
+	scp -i /root/.ssh/id_rsa saver@$1:/home/backup/ /root/$FILE
 
-	echo "Removing /root/$FILE temporary file" >> /root/backup.log
+	echo "Removing /root/$FILE temporary file" >> $LOGFILE 2>&1
 	logger "Backing up data to $FILE file"
 	rm /tmp/$FILE
 
@@ -110,58 +119,75 @@ files_backup(){
 # Test Case: files_backup <method> <source(s)> <destination>
 #######################################################################
 
-mysql_backup(){
-	# TODO: merge this section to script -- mysql dbs
-	ADDRESS="172.20.5.212"
-	FILE="mysql_${ADDRESS}_${NOW}.tar.bz2"
-
-	echo "---------------- $NOW ---------------" >> /root/backup.log
-
-	echo "Backing up data to $FILE file" >> /root/backup.log
-	mysqldump -u root -pxaminmysql92 portal > portal_$NOW.sql
-	mysqldump -u root -pxaminmysql92 wiki > wiki_$NOW.sql
-	mysqldump -u root -pxaminmysql92 ask > ask_$NOW.sql
-
-	tar cvjf /tmp/$FILE portal_$NOW.sql ask_$NOW.sql wiki_$NOW.sql
-
-	echo "Moving to $FILE file to 172.20.5.211/home/backup" >> /root/backup.log
-	scp -i .ssh/id_rsa /tmp/$FILE saver@172.20.5.211:/home/backup/
-
-	echo "Removing /root/$FILE temporary file" >> /root/backup.log
-	rm /tmp/$FILE portal_$NOW.sql ask_$NOW.sql wiki_$NOW.sql
-};
+#mysql_backup(){
+#	# TODO: merge this section to script -- mysql dbs
+##	ADDRESS="172.20.5.212"
+##	FILE="mysql_${ADDRESS}_${NOW}.tar.bz2"
+##
+##	echo "---------------- $NOW ---------------" >> /root/backup.log
+##
+##	echo "Backing up data to $FILE file" >> /root/backup.log
+##	mysqldump -u root -pxaminmysql92 portal > portal_$NOW.sql
+##	mysqldump -u root -pxaminmysql92 wiki > wiki_$NOW.sql
+##	mysqldump -u root -pxaminmysql92 ask > ask_$NOW.sql
+##
+##	tar cvjf /tmp/$FILE portal_$NOW.sql ask_$NOW.sql wiki_$NOW.sql
+#
+#	echo "Moving to $FILE file to 172.20.5.211/home/backup" >> /root/backup.log
+#	scp -i .ssh/id_rsa /tmp/$FILE saver@172.20.5.211:/home/backup/
+#
+#	echo "Removing /root/$FILE temporary file" >> /root/backup.log
+#	rm /tmp/$FILE portal_$NOW.sql ask_$NOW.sql wiki_$NOW.sql
+#};
 # Test case: mysql_backup
 ######################################################################
 #-----------------------------------------------------------------------------------
+if [ -z ${1} ];then
+    usage
+fi
 
 for i in $@ ; do
 	case "${1}" in
 	"--mysql"|"-m")
 		if [ -z "${2}" ] ; then
-			echo -n "${red}No parameter defining mysql attributes${reset}\n"
+			echo "${red}No parameter defining mysql attributes${reset}"
 			logger "No parameter defining mysql attributes"
 			usage
 		fi
+
 		shift
 		shift
 	;;
 	"--file"|"-f")
+	    echo $NOW
 		if [ -z "${2}" ] ; then
-			echo -n "${red}No parameter defining file or directory${reset}\n"
+			echo "${red}No parameter defining file or directory${reset} "
 			logger "No parameter defining file or directory"
 			usage
-        else
-            ADDRESS=${2}
-            #backup --files|-f </etc/> --increamental|-i --snapshot|-s --address 127.0.0.1
-            files_backup ${2}
-            exit 1
+			shift
 		fi
-		shift
+
+        ADDRESS=${2} #like this format 127.0.0.1:/var/www/
+        if [ \( "${3}" = "-i" \) -o \( "${3}" = "--increamental" \) ];then
+            METHOD="rysnc"
+        else
+            if [ \( "${3}" = "-s" \) -o \( "${3}" = "--snapshot" \) ];then
+                METHOD="scp"
+            else
+                usage
+            fi
+
+        fi
+        #backup --files|-f </etc/> --increamental|-i --snapshot|-s --address 127.0.0.1
+        echo "${ADDRESS} ${METHOD}"
+        files_backup ${ADDRESS} ${METHOD}
+        exit 1
+
 		shift
 	;;
 	"--git"|"-g")
 		if [ -z "${2}" ] ; then
-			echo -n "${red}No parameter defining git repo.${reset}\n"
+			echo "${red}No parameter defining git repo.${reset}"
 			logger "No parameter defining git repo."
 			usage
 		fi
