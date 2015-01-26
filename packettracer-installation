@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#this installaion tooks a lot of my time so I created this to help others
+# wget <Cisco\ Packet\ Tracer\ 6.0.1\ for\ Linux\ \(no\ tutorials\)>
+cd ~
+tar -xvzf Cisco\ Packet\ Tracer\ 6.0.1\ for\ Linux\ \(no\ tutorials\)
+cp -arv PacketTracer601/ /opt/
+chown -R root:root /opt/PacketTracer601
+cd /opt/opt/PacketTracer601
+./install #follow instaructions and do not change /opt/pt during installation
+./set_ptenv.sh
+#wget <packet tracer icone from google and rename it to pt.jpg>
+mv ~/pt.jpg /usr/share/icons/pt.jpg
+touch /usr/share/applications/packettracer.desktop
+echo "[Desktop Entry]
+Version=6.0
+Name=Cisco Packet Tracer
+GenericName=Cisco Packet Tracer
+Comment=OK
+Exec=/opt/pt/packettracer
+Icon=/usr/share/icons/pt.jpg
+Terminal=false
+Type=Application
+MimeType=application/x-pkt;application/x-pka;application/x-pkz;" >> /usr/share/applications/packettracer.desktop
+sudo dpkg --add-architecture i386
+sudo apt-get update
+sudo apt-get install libssl1.0.0:i386 libssl-dev:i386 libssl1.0.0 libssl-dev libx11-dev:i386 libxrender-dev:i386 libglib2.0-dev:i386 libfreetype6-dev:i386 libfontconfig1-dev:i386 libc6:i386 libncurses5:i386 libstdc++6:i386 libqtwebkit4:i386
+
+# be happy
