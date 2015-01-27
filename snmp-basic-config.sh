@@ -75,7 +75,7 @@ echo -n "Configuring /etc/default/snmpd "
 progress 1 "Done!"
 sudo iptables -A INPUT -p udp -s $IP --dport 161 -j ACCEPT
 echo -n "Configuring ip tables "
-progress 1 "Done!"
+progress 1 "Done!"S
 sudo /etc/init.d/snmpd restart
 echo -n "Starting snmpd agent service "
 progress 1 "Done!"
