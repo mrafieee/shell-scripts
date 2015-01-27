@@ -20,7 +20,7 @@
 #---------------------- Some Global variables
 NOW=$(date +"%Y-%m-%d %H:%M:%S")
 LOGFILE="/var/log/backup.log"
-BACKUP_DEST="/home/$USER/backup"
+BACKUP_DEST="sdg@172.20.90.16:/home/$USER/backup/"
 red=`tput setaf 1`
 green=`tput setaf 2`
 reset=`tput sgr0`
@@ -34,10 +34,10 @@ echo "#################################################################"
 
 if ! [ -d ${BACKUP_DEST} ]; then
     echo "${BACKUP_DEST} does not exist creatig directory ..."
-    mkdir ${BACKUP_DEST}
+    mkdir ${BACKUP_DES0T}
 fi
 
-echo "Backup destination is ${green}${BACKUP_DEST}/${reset}"
+echo "Backup destination is ${green}${BACKUP_DEST}${reset}"
 echo "Logs are saved in ${green}${BACKUP_DEST}:${LOGFILE}${reset}"
 echo "git & mysql is not working yet"
 # Parse input parameters
@@ -55,7 +55,7 @@ examples:
     backup --git|-g http://172.20.90.11/address.git
 For more info: man $0"
 # TODO: no man page exists yet
-	exit 0
+	exit 1
 }
 
 
@@ -97,24 +97,26 @@ For more info: man $0"
 
 files_backup(){
 	# Destination should be a directory name
-    # backup --files|-f </etc/> --increamental|-i --snapshot|-s --address 127.0.0.1
+    # backup --files|-f <"/etc/"> --increamental|-i --snapshot|-s --address 127.0.0.1
 	# TODO: adding hostname to backupfile
-	FILE="_${ADDRESS}_${NOW}.tar.bz2"
+	${SRC_DIRS}=${1}
+	${METHOD}=${2}
 
-	echo "---------------- $NOW ---------------" >> $LOGFILE 2>&1
+	DEST_FILE="${NOW}.tar.bz2"
 
-	echo "Backing up data to $FILE file" >> $LOGFILE 2>&1
-	logger "Backing up data to $FILE file"
-	tar cvjf /tmp/$FILE /var/www/ /etc/
+	echo "$(date +"%Y-%m-%d %H:%M:%S") -- Backing up data to $FILE file" >> $LOGFILE 2>&1
+	#logger "$(date +"%Y-%m-%d %H:%M:%S") -- Backing up data to $FILE file"
+	if [ ${METHOD} = "scp" ]; then
+	    tar cvjf /tmp/$DEST_FILE ${SRC_DIRS}
 
-	echo "Moving to $FILE file to $1" >> $LOGFILE 2>&1
-	logger "Backing up data to $FILE file"
-	scp -i /root/.ssh/id_rsa saver@$1:/home/backup/ /root/$FILE
+	    echo "$(date +"%Y-%m-%d %H:%M:%S") --  Moving to $FILE file to ${BACKUP_DEST}" >> $LOGFILE 2>&1
+	    #logger "$(date +"%Y-%m-%d %H:%M:%S") -- Backing up data to $FILE file"
+	    scp -i /root/.ssh/id_rsa  /tmp/$FILE 172.20.90.16@${BACKUP_DEST}:/home/backup/
 
-	echo "Removing /root/$FILE temporary file" >> $LOGFILE 2>&1
-	logger "Backing up data to $FILE file"
-	rm /tmp/$FILE
-
+	    echo "$(date +"%Y-%m-%d %H:%M:%S") -- Removing /root/$FILE temporary file" >> $LOGFILE 2>&1
+	    #logger "$(date +"%Y-%m-%d %H:%M:%S") -- Backing up data to $FILE file"
+	    rm /tmp/$FILE
+    fi
 };
 # Test Case: files_backup <method> <source(s)> <destination>
 #######################################################################
@@ -145,59 +147,59 @@ files_backup(){
 if [ -z ${1} ];then
     usage
 fi
+ssh sdg@31.184.132.files_backup "/etc/" "scp"
 
-for i in $@ ; do
-	case "${1}" in
-	"--mysql"|"-m")
-		if [ -z "${2}" ] ; then
-			echo "${red}No parameter defining mysql attributes${reset}"
-			logger "No parameter defining mysql attributes"
-			usage
-		fi
+#for i in $@ ; do
+#	case "${1}" in
+#	"--mysql"|"-m")
+#		if [ -z "${2}" ] ; then
+#			echo "${red}No parameter defining mysql attributes${reset}"
+#			logger "No parameter defining mysql attributes"
+#			usage
+#		fi
+#
+#		shift
+#		shift
+#	;;
+#	"--file"|"-f")
+#	    echo $NOW
+#		if [ -z "${2}" ] ; then
+#			echo "${red}No parameter defining file or directory${reset} "
+#			logger "No parameter defining file or directory"
+#			usage
+#			shift
+#		fi
+#
+#        ADDRESS=${2} #like this format 127.0.0.1:/var/www/
+#        if [ \( "${3}" = "-i" \) -o \( "${3}" = "--increamental" \) ];then
+#            METHOD="rysnc"
+#        else
+#            if [ \( "${3}" = "-s" \) -o \( "${3}" = "--snapshot" \) ];then
+#                METHOD="scp"
+#            else
+#                usage
+#            fi
+#
+#        fi
+#        #backup --files|-f </etc/> --increamental|-i --snapshot|-s --address 127.0.0.1
+#        echo "${ADDRESS} ${METHOD}"
+#        files_backup ${ADDRESS} ${METHOD}
+#		exit 0
+#	;;
+#	"--git"|"-g")
+#		if [ -z "${2}" ] ; then
+#			echo "${red}No parameter defining git repo.${reset}"
+#			logger "No parameter defining git repo."
+#			usage
+#		fi
+#	;;
+#	"--help"|"-h")
+#	    echo $NOW
+#		usage
+#		shift
+#	;;
+#	*)
+#	;;
+#	esac
+#done
 
-		shift
-		shift
-	;;
-	"--file"|"-f")
-	    echo $NOW
-		if [ -z "${2}" ] ; then
-			echo "${red}No parameter defining file or directory${reset} "
-			logger "No parameter defining file or directory"
-			usage
-			shift
-		fi
-
-        ADDRESS=${2} #like this format 127.0.0.1:/var/www/
-        if [ \( "${3}" = "-i" \) -o \( "${3}" = "--increamental" \) ];then
-            METHOD="rysnc"
-        else
-            if [ \( "${3}" = "-s" \) -o \( "${3}" = "--snapshot" \) ];then
-                METHOD="scp"
-            else
-                usage
-            fi
-
-        fi
-        #backup --files|-f </etc/> --increamental|-i --snapshot|-s --address 127.0.0.1
-        echo "${ADDRESS} ${METHOD}"
-        files_backup ${ADDRESS} ${METHOD}
-        exit 1
-
-		shift
-	;;
-	"--git"|"-g")
-		if [ -z "${2}" ] ; then
-			echo "${red}No parameter defining git repo.${reset}"
-			logger "No parameter defining git repo."
-			usage
-		fi
-	;;
-	"--help"|"-h")
-	    echo $NOW
-		usage
-		shift
-	;;
-	*)
-	;;
-	esac
-done
