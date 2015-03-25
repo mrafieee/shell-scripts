@@ -203,3 +203,67 @@ ssh sdg@31.184.132.files_backup "/etc/" "scp"
 #	esac
 #done
 
+#!/bin/bash
+
+#NOW=$(date +"%Y-%m-%d %H:%M:%S")
+DATE=$(date +"%Y-%m-%d")
+HOSTNAME="C2"
+TOBACKUP="/etc/"
+BACKUP_DEST="/tmp/${HOSTNAME}-${DATE}.tar.bz2"
+HOST_IP="172.20.90.11"
+BACKUP_SERVER_IP="172.20.90.16"
+LOGFILE="/var/log/backup.log"
+
+tar cvjf ${BACKUP_DEST} ${TOBACKUP}
+echo "$(date +'%Y-%m-%d %H:%M:%S') --  $TOBACKUP file created in ${BACKUP_DEST}" >> $LOGFILE 2>&1
+scp -i /root/.ssh/id_rsa  ${BACKUP_DEST} root@${BACKUP_SERVER_IP}:/home/backup/
+echo "$(date +'%Y-%m-%d %H:%M:%S') --  $TOBACKUP file copied to backup server ${BACKUP_SERVER_IP}" >> $LOGFILE 2>&1
+rm ${BACKUP_DEST}
+echo "$(date +'%Y-%m-%d %H:%M:%S') -- ${BACKUP_DEST} removed from local machine ${HOST_IP}" >> $LOGFILE 2>&1
+
+#0 1 * * 4 sh /root/backup > crontab -e
+
+
+
+
+#!/bin/bash
+
+#NOW=$(date +"%Y-%m-%d %H:%M:%S")
+DATE=$(date +"%Y-%m-%d")
+HOSTNAME="C4"
+TOBACKUP="/etc/ /tmp/keystonedb_$DATE.sql /tmp/mysql_$DATE.sql /tmp/novadb_$DATE.sql /tmp/neutrondb_$DATE.sql /tmp/glancedb_$DATE.sql"
+BACKUP_DEST="/tmp/${HOSTNAME}-${DATE}.tar.bz2"
+HOST_IP="172.20.90.13"
+BACKUP_SERVER_IP="172.20.90.16"
+LOGFILE="/var/log/backup.log"
+#--------------------------------
+DB_NAME=""
+DB_HOST="localhost"
+DB_USER="root"
+DB_PASS="c4!@#$%"
+#--------------------------------
+
+mysqldump -u ${DB_USER} -p${DB_PASS} novadb > /tmp/novadb_$DATE.sql
+mysqldump -u ${DB_USER} -p${DB_PASS} neutrondb > /tmp/neutrondb_$DATE.sql
+mysqldump -u ${DB_USER} -p${DB_PASS} glancedb > /tmp/glancedb_$DATE.sql
+mysqldump -u ${DB_USER} -p${DB_PASS} keystonedb > /tmp/keystonedb_$DATE.sql
+mysqldump -u ${DB_USER} -p${DB_PASS} mysql > /tmp/mysql_$DATE.sql
+
+#${TOBACKUP}="/etc/ /tmp/keystonedb_$DATE.sql /tmp/mysql_$DATE.sql /tmp/novadb_$DATE.sql /tmp/neutrondb_$DATE.sql /tmp/glancedb_$DATE.sql"
+
+
+
+echo "$(date +'%Y-%m-%d %H:%M:%S') --  SQL backup from novadb,neutrondb,glancedb,keystonedb,mysql has been created" >> $LOGFILE 2>&1
+
+tar cvjf ${BACKUP_DEST} ${TOBACKUP}
+echo "$(date +'%Y-%m-%d %H:%M:%S') --  $TOBACKUP file created in ${BACKUP_DEST}" >> $LOGFILE 2>&1
+
+scp -i /root/.ssh/id_rsa  ${BACKUP_DEST} root@${BACKUP_SERVER_IP}:/home/backup/
+echo "$(date +'%Y-%m-%d %H:%M:%S') --  $TOBACKUP file copied to backup server ${BACKUP_SERVER_IP}" >> $LOGFILE 2>&1
+
+rm -f ${BACKUP_DEST}
+echo "$(date +'%Y-%m-%d %H:%M:%S') -- ${BACKUP_DEST} removed from local machine ${HOST_IP}" >> $LOGFILE 2>&1
+
+rm -f /tmp/keystonedb_$DATE.sql /tmp/mysql_$DATE.sql /tmp/novadb_$DATE.sql /tmp/neutrondb_$DATE.sql /tmp/glancedb_$DATE.sql
+echo "$(date +'%Y-%m-%d %H:%M:%S') --  temporary sql files removed from /tmp/" >> $LOGFILE 2>&1
+
