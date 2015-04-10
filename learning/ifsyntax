@@ -1,0 +1,22 @@
+#!/bin/bash 
+#specifing the interpreter
+
+# this is a comment
+# upercase matters
+
+echo "---- Welcome ----"
+var=$(ls -l)
+var2=`ls -l`
+
+echo "I your name Bob?"
+read isname
+
+if [ $isname = "Yes" ];
+then
+	echo "nice to meet you Bob."
+	echo "bob loged in" | mail -s "WARNING" root
+else
+	echo "Go away."
+fi
+
+

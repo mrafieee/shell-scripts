@@ -1,0 +1,20 @@
+#!/bin/bash
+
+for x in *
+do
+	echo $x;
+done
+
+for i in `seq 1 15` 
+do
+	echo -n $i;
+done
+
+
+files=`ls ~`
+ls -al
+echo "----------------------------";
+for item in $files
+do
+	echo $item;
+done
