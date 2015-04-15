@@ -1,0 +1,7 @@
+ip tuntap add dev tap0 mode tap user mohammad
+ip addr add 192.168.1.1/24 dev tap0
+ip tuntap del dev tap0
+
+brctl addbr br0
+brctl addif br0 eth0
+brctl addif br0 tap0
