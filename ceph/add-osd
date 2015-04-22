@@ -1,0 +1,33 @@
+#!/bin/bash
+
+
+if[$1='-h']then
+	echo "usage: ./add-osd cluster_name disk_block_device"
+	echo "example: ./add-osd ceph /dev/sdb1"
+	exit 0
+fi
+
+CLUSTER=$1
+DISK_DEV=$3
+HOST=`cat /etc/hostname`
+OSD_NUM=`ceph osd create`
+
+
+mkdir /var/lib/ceph/osd/ceph-$OSD_NUM
+if[$1]then
+	mkfs -t xfs -f $DISK_DEV
+fi
+
+mount $DISK_DEV /var/lib/ceph/osd/ceph-$OSD_NUM
+mount -o remount,user_xattr $DISK_DEV /var/lib/ceph/osd/ceph-$OSD_NUM
+ceph-osd -i $OSD_NUM --mkfs --mkkey
+ceph auth add osd.$OSD_NUM osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/ceph-$OSD_NUM/keyring
+ceph --cluster $CLUSTER osd crush add-bucket $HOST host
+ceph osd crush move $HOST root=default
+ceph osd crush add osd.$OSD_NUM 1.0 host=$HOST
+/etc/init.d/ceph start osd.$OSD_NUM
+/etc/init.d/ceph -v start osd.$OSD_NUM
+/etc/init.d/ceph restart
+/etc/init.d/ceph -a restart
+touch /var/lib/ceph/osd/ceph-$OSD_NUM/sysvinit
+

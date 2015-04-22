@@ -1,0 +1,7 @@
+#!/bin/bash
+
+/etc/init.d/ceph -a stop
+killall ceph-osd
+killall ceph-mon
+umount /dev/cciss/c0d0p1
+rm -fR /tmp/* /srv/* /etc/ceph/ceph.client.admin.keyring /var/lib/ceph/{mon,osd}/*
