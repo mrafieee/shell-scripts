@@ -2,7 +2,7 @@
 
 # This piece of code adds all of the public keys in keys folder to the 
 # specifc remote server given as the first arg
-# example: add-em-to 192.168.1.100
+# example: add-em-to user@192.168.1.100
 
 REMOTE=$1
 FILES='keys/*'
@@ -21,4 +21,4 @@ scp $TMP $REMOTE:$HOME/.ssh/
 ssh $REMOTE cat $HOME/.ssh/tmp >> $HOME/.ssh/authorized_keys && rm $HOME/.ssh/tmp
 rm $TMP
 
-cat $HOME/.ssh/authorized_keys
+# ssh $REMOTE cat $HOME/.ssh/authorized_keys
