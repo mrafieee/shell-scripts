@@ -8,12 +8,13 @@ if[$1='-h']then
 fi
 
 CLUSTER=$1
-DISK_DEV=$3
+DISK_DEV=$2
 HOST=`cat /etc/hostname`
 OSD_NUM=`ceph osd create`
 
 
 mkdir /var/lib/ceph/osd/ceph-$OSD_NUM
+
 if[$1]then
 	mkfs -t xfs -f $DISK_DEV
 fi
@@ -31,3 +32,5 @@ ceph osd crush add osd.$OSD_NUM 1.0 host=$HOST
 /etc/init.d/ceph -a restart
 touch /var/lib/ceph/osd/ceph-$OSD_NUM/sysvinit
 
+ceph -s
+ceph osd tree
