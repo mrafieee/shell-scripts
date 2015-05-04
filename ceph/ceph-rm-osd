@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ceph osd crush remove $1
+ceph auth del $1
+ceph osd rm $2
+
+ceph osd tree
