@@ -1,8 +1,18 @@
 #!/bin/bash
+# This script is the simplest way to add a OSD (Object Storage Daemon)
+# to an specifed ceph cluster
+# Ceph is a Distirbuted File System cluster solution http://ceph.com/
+
+# TODO: check the Block device validity
+# TODO: Check if the ceph i installed or not
+# TODO: Before running this script you have to check if at least one Monitor be 
+# added to chech cluster
+# TODO: check the validity of first argument if the specified cluster exist or note
+
 
 if [ "$1" == "-h" ]; then
-	echo "usage: ./add-osd cluster_name disk_block_device"
-	echo "example: ./add-osd ceph /dev/sdb1"
+	echo "usage: ./ceph-add-osd cluster_name disk_block_device"
+	echo "example: ./ceph-add-osd ceph /dev/sdb1"
 	exit 0
 fi
 

@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ "$1" == "-h" ]; then
+        echo "usage: ./ceph-rm-osd OSD_FULL_NAME OSD_NUMBER"
+        echo "example: ./ceph-rm-osd osd.1 1"
+        exit 0
+fi
+
+
 ceph osd crush remove $1
 ceph auth del $1
 ceph osd rm $2
