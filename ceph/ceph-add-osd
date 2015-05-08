@@ -4,10 +4,31 @@
 # Ceph is a Distirbuted File System cluster solution http://ceph.com/
 
 # TODO: check the Block device validity
-# TODO: Check if the ceph i installed or not
 # TODO: Before running this script you have to check if at least one Monitor be 
 # added to chech cluster
 # TODO: check the validity of first argument if the specified cluster exist or note
+
+progress(){
+	# color code constants
+	red=`tput setaf 1`
+	green=`tput setaf 2`
+	reset=`tput sgr0`
+	# variables
+	progress=10
+	is_ok=$1
+	msg=$2
+
+	for i in `seq 1 $progress`
+	do
+		echo -n "."
+		sleep 0.2s
+	done
+	if [ "$is_ok" -eq "1" ];then
+		echo -ne " [ ${green}${msg}${reset} ]\n"
+	else
+		echo -ne " [ ${red}${msg}${reset} ]\n"
+	fi
+}
 
 
 if [ "$1" == "-h" ]; then
@@ -20,6 +41,26 @@ CLUSTER=$1
 DISK_DEV=$2
 HOST=`cat /etc/hostname`
 OSD_NUM=`ceph osd create`
+
+
+if ! [ -f /etc/initd/ceph ];then
+	progress 0 "ceph is not installed"
+	read -p "Do you want to install ceph package: (Y/n) " prompt
+	if [ \( "$prompt" = "Y" \) -o \( "$prompt" = "y" \) ];then
+		sudo apt-get update
+		sudo apt-get install ceph
+		echo "ceph installed successfully :)"
+	else
+		if [ "$prompt" = "n" ];then
+			echo -ne "\nScript will now terminate "
+			progress 1 "Good luck!"
+			exit 0
+		fi
+		exit 0
+	fi
+else
+	progress 1 "ceph is already installed"
+fi
 
 
 mkdir /var/lib/ceph/osd/ceph-$OSD_NUM
