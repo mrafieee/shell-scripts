@@ -19,9 +19,9 @@ progress(){
 		sleep 0.2s
 	done
 	if [ "$is_ok" -eq "1" ];then
-		echo -n " [ ${green}${msg}${reset} ]\n"
+		echo -ne " [ ${green}${msg}${reset} ]\n"
 	else
-		echo -n " [ ${red}${msg}${reset} ]\n"
+		echo -ne " [ ${red}${msg}${reset} ]\n"
 	fi
 }
 
@@ -31,14 +31,14 @@ clear
 echo "#################################################################"
 echo "######## This piece of code is GPL V3 and is free to use ########"
 echo "#################################################################"
-echo "\n"
+echo -e "\n"
 read -p "Your SNMP Server IP Address: " IP
 read -p "Your specified community name: " COMMUNITY
 
 #IP="172.20.90.1"	# sample data
 #COMMUNITY="IDC" 	# sample data
 
-echo -n "\nChecking for SNMP agent configuration "
+echo -ne "\nChecking for SNMP agent configuration "
 # TODO: next version fixture
 #ps aux|grep -v grep|grep snmpd
 #/etc/snmpd/snmpd.conf
@@ -46,14 +46,13 @@ echo -n "\nChecking for SNMP agent configuration "
 if ! [ -f /etc/initd/snmpd ];then
 	progress 0 "SNMP agent is not installed"
 	read -p "Do you want to install snmpd package: (Y/n) " prompt
-	echo $prompt
 	if [ \( "$prompt" = "Y" \) -o \( "$prompt" = "y" \) ];then
 		sudo apt-get update
 		sudo apt-get install snmpd
 		echo "Snmpd installed successfully :)"
 	else
 		if [ "$prompt" = "n" ];then
-			echo "\n Script will now terminate "
+			echo -ne "\n Script will now terminate "
 			progress 1 "Good luck!"
 			exit 0
 		fi
