@@ -79,6 +79,6 @@ ceph osd in $OSD_NUM
 /etc/init.d/ceph start osd.$OSD_NUM
 /etc/init.d/ceph -v start osd.$OSD_NUM
 touch /var/lib/ceph/osd/ceph-$OSD_NUM/sysvinit
-
+echo "$DISK_DEV	/var/lib/ceph/osd/ceph-$OSD_NUM	xfs	defaults	0	0" >> /etc/fstab
 ceph -s
 ceph osd tree
