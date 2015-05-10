@@ -8,6 +8,7 @@ fi
 
 OSD_NAME=$1
 OSD_NUM=$2
+CLUSTER="ceph"
 
 ceph osd out $OSD_NUM
 /etc/init.d/ceph -v stop $OSD_NAME
@@ -15,7 +16,7 @@ umount /var/lib/ceph/osd/ceph-$OSD_NUM
 ceph osd crush remove $OSD_NAME
 ceph auth del $OSD_NAME
 ceph osd rm $OSD_NUM
-
+rm -R /var/lib/ceph/osd/$CLUSTER-$OSD_NUM
 ceph -s
 ceph osd tree
 
