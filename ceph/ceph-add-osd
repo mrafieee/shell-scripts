@@ -63,7 +63,7 @@ else
 fi
 
 
-mkdir /var/lib/ceph/osd/ceph-$OSD_NUM
+mkdir -p /var/lib/ceph/osd/ceph-$OSD_NUM
 
 mkfs -t xfs -f $DISK_DEV
 
@@ -75,9 +75,9 @@ ceph --cluster $CLUSTER osd crush add-bucket $HOST host
 ceph osd crush move $HOST root=default
 ceph osd crush add osd.$OSD_NUM 1.0 host=$HOST
 ceph osd in $OSD_NUM
-/etc/init.d/ceph -a -v restart
+# /etc/init.d/ceph -a -v restart
 /etc/init.d/ceph start osd.$OSD_NUM
-/etc/init.d/ceph -v start osd.$OSD_NUM
+/etc/init.d/ceph -v restart osd.$OSD_NUM
 touch /var/lib/ceph/osd/ceph-$OSD_NUM/sysvinit
 echo "$DISK_DEV	/var/lib/ceph/osd/ceph-$OSD_NUM	xfs	defaults	0	0" >> /etc/fstab
 ceph -s
