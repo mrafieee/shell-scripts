@@ -6,9 +6,16 @@ if [ "$1" == "-h" ]; then
         exit 0
 fi
 
+OSD_NAME=$1
+OSD_NUM=$2
 
-ceph osd crush remove $1
-ceph auth del $1
-ceph osd rm $2
+ceph osd out $OSD_NUM
+/etc/init.d/ceph -v stop $OSD_NAME
+umount /var/lib/ceph/osd/ceph-$OSD_NUM
+ceph osd crush remove $OSD_NAME
+ceph auth del $OSD_NAME
+ceph osd rm $OSD_NUM
 
+ceph -s
 ceph osd tree
+
