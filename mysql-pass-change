@@ -1,0 +1,32 @@
+#!/bin/bash
+
+PASS=$1
+clear
+
+# stoping the mysql main service
+sudo /etc/init.d/mysql stop
+sudo killall mysqld
+sudo killall mysqld_safe
+
+UP=$(pgrep mysql | wc -l);
+if [ "$UP" -ne 1 ]; then
+	#starting mysql with some alternate options
+	sudo mysqld_safe --skip-grant-tables&
+	# Changing the root useer password stored in user table in mysql database
+	echo -e "\nChanging root password ...."
+	sleep 10
+	mysql -u root mysql --execute="USE mysql;UPDATE mysql.user SET password=PASSWORD('"$PASS"') WHERE User='root';FLUSH PRIVILEGES;" 2>&1
+fi
+
+# Restarting the service
+sudo killall -9 mysqld
+sudo killall -9 mysqld_safe
+sudo killall -9 mysql
+
+sudo /etc/init.d/mysql stop
+ps aux | grep mysql
+sudo /etc/init.d/mysql start
+
+echo -e "\n\t ************* Done! password successfully changed! ************** \n \n"
+
+mysql -u root -p$PASS
