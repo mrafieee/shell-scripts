@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# our goal is to generate 0.0.0.0 to 255.255.255.255
+# O(n^4)
+
+END=255
+
+for i in $(seq $END); do
+	for j in $(seq $END); do
+		for k in $(seq $END)}; do
+			for l in $(seq $END); do
+				echo $i.$j.$k.$l >> ips.txt
+			done
+		done
+	done
+done
+	
