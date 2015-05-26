@@ -2,16 +2,25 @@
 
 # our goal is to generate 0.0.0.0 to 255.255.255.255
 # O(n^4)
+# TODO: exclude private ranges and reserved IP addresses
+# http://en.wikipedia.org/wiki/Reserved_IP_addresses
+# From 10.0.0.0 to 10.255.255.255.
+# From 172.16.0.0 to 172.31.255.255.
+# From 192.168.0.0 to 192.168.255.255.
 
+START=0
 END=255
+START_TIME=$(date +%s)
 
-for i in $(seq $END); do
-	for j in $(seq $END); do
-		for k in $(seq $END)}; do
-			for l in $(seq $END); do
-				echo $i.$j.$k.$l >> ips.txt
+for i in $(seq $START $END); do
+	for j in $(seq $START $END); do
+		for k in $(seq $START $END)}; do
+			for l in $(seq $START $END); do
+				echo $i.$j.$k.$l |tee --append ips.txt
 			done
 		done
 	done
 done
-	
+END_TIME=$(date +%s)
+DIFF=$(( $END_END - $START_TIME ))
+echo "Done! It took $DIFF seconds"
