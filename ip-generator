@@ -7,15 +7,20 @@
 # From 10.0.0.0 to 10.255.255.255.
 # From 172.16.0.0 to 172.31.255.255.
 # From 192.168.0.0 to 192.168.255.255.
+# TODO: to seperate valid/all ips using switches --valid --all
 
 START=0
 END=255
 START_TIME=$(date +%s)
 
 for i in $(seq $START $END); do
+	if [ $i -eq 10 ]; then continue; fi
 	for j in $(seq $START $END); do
+		 if [ $i -eq 172 -a $j -ge 16 -a $j -le 31 ]; then continue; fi
+                 if [ $i -eq 192 -a $j -eq 168 ]; then continue; fi
 		for k in $(seq $START $END)}; do
 			for l in $(seq $START $END); do
+				if [ $i -eq 127 -a $j -eq 0 -a $k -eq 0 -a $l -eq 1 ]; then continue; fi
 				echo $i.$j.$k.$l |tee --append ips.txt
 			done
 		done
