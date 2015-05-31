@@ -1,28 +1,39 @@
-#!/bin/sh
+#!/bin/bash
+clear;
 
-echo "\n-------------- Restarting Identity services nova services ----------------\n"
-service keystone restart
+ACTION=$1
 
-echo "\n-------------- Restarting Compute services nova services ----------------\n"
-service nova-api restart
-service nova-cert restart
-service nova-consoleauth restart
-service nova-scheduler restart
-service nova-conductor restart
-service nova-novncproxy restart
+if [ "$ACTION" == "-h" ]; then
+	echo "usage: ./check_services restart"
+	exit 0;
+fi
+if [ "$ACTION" == "stop" -o "$ACTION" == "start" -o "$ACTION" == "restart" ]; then
 
-echo "\n-------------- Restarting Image services ----------------\n"
-service glance-registry restart
-service glance-api restart
+	echo -e "\n-------------- $ACTIONing Identity services nova services ----------------\n"
+	service keystone $ACTION
 
-echo "\n-------------- Restarting Networking services ----------------\n"
-service neutron-server restart
+	echo -e "\n-------------- $ACTIONing Compute services nova services ----------------\n"
+	service nova-api $ACTION
+	service nova-cert $ACTION
+	service nova-consoleauth $ACTION
+	service nova-scheduler $ACTION
+	service nova-conductor $ACTION
+	service nova-novncproxy $ACTION
+
+	echo -e "\n-------------- $ACTIONing Image services ----------------\n"
+	service glance-registry $ACTION
+	service glance-api $ACTION
+
+	echo -e "\n-------------- $ACTIONing Networking services ----------------\n"
+	service neutron-server $ACTION
 
 
-#network node
-service  neutron-dhcp-agent restart
-service  neutron-l3-agent restart
-service  neutron-plugin-openvswitch-agent restart
-
+	#network node
+	service  neutron-dhcp-agent $ACTION
+	service  neutron-l3-agent $ACTION
+	service  neutron-plugin-openvswitch-agent $ACTION
+else
+	echo "$ACTION is not a proper parameter pleas retry using {start,stop,restart} parameters."
+fi
 
 
