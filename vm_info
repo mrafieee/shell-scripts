@@ -1,0 +1,29 @@
+ #!/bin/bash
+
+w
+
+if [ `uname` == "Linux" ]; then
+	df -h
+	echo -n " -- CPU cores: "
+	nproc
+	echo -n " -- RAM info: "
+	vmstat -s |grep "total memory"|awk '{ print $1 }'
+	echo -n " -- /data/ size: "
+	lsblk |grep "data"|awk '{print $4 $5 }'
+	echo -n " -- / size:"
+	lsblk |grep "sda "|awk '{print $4 }'
+	echo -n " -- SWAP size: "
+	lsblk |grep "sdb "|awk '{print $4 }'
+	echo -n " -- Redhat release: "
+	cat /etc/redhat-release
+	
+	sudo bash
+
+elif [ `uname` == "SunOS" ]; then
+	if [ -a /opt/sfw/bin/sudo ]; then
+		/opt/sfw/bin/sudo su -
+		echo -n " -- CPU cores: "
+ 		psrinfo |wc -l
+    prtconf|grep Memory
+	fi
+fi
